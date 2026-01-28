@@ -1,0 +1,8 @@
+name: student-performance
+dependencies:
+  - python=3.13
+  - pip
+  - pip:
+    - ipykernel
+    - pandas
+    - seaborn
