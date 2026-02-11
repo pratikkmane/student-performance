@@ -1,6 +1,6 @@
 name: student-performance
 dependencies:
-  - python=3.13
+  - python=3.10.7
   - pip
   - pip:
     - ipykernel
