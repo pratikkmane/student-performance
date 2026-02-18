@@ -1,8 +1,24 @@
 name: student-performance
+channels:
+  - conda-forge
+  - defaults
 dependencies:
-  - python=3.13
+  - python=3.10.7
   - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - jupyter
+  - plotly
   - pip:
-    - ipykernel
-    - pandas
-    - seaborn
+      - ipykernel
+
+# To activate this environment, use
+#
+#     $ conda activate student-performance
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate

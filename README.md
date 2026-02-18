@@ -18,10 +18,10 @@ Build a Streamlit web app that:
 3. Visualizes relationships between study behaviors and academic outcomes
 
 ## Team Members
-- **Team Lead:** [Your Name] - EDA + Home Page
-- **Member 2:** [Name] - Prediction Model
-- **Member 3:** [Name] - Visualizations
-- **Member 4:** [Name] - Streamlit UI
+- **Team Lead:** Pratik
+- **Member 2:** Hamza
+- **Member 3:** Yugant
+- **Member 4:** Emmanuel
 
 ## How to Run (Coming Soon)
 ```bash
