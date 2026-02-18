@@ -436,3 +436,170 @@ Performance measurements - these are what we're trying to predict
 | Grades | 3 | G3 (target) | 🎯 What we predict |
 
 **For interventions:** Focus on School-Related, Social/Behavioral, and Attendance factors - these can actually be changed through support programs!
+
+---
+
+## 🚨 FEATURES TO EXCLUDE FOR EARLY PREDICTION
+
+### ❌ Must Exclude (3 features)
+
+For our early intervention system, we **MUST EXCLUDE** these features because they are not available at the start of the academic year:
+
+| Feature | Why Exclude | When Available |
+|---------|-------------|----------------|
+| **G1** | First period grade | After 1st trimester (~3 months) |
+| **G2** | Second period grade | After 2nd trimester (~6 months) |
+| **G3** | Final grade | End of year (~9 months) |
+
+**Rationale:** The goal of this project is **EARLY INTERVENTION** - identifying at-risk students at the START of the academic year, BEFORE any grades are available. Waiting for mid-term grades (G1, G2) defeats the purpose of early intervention.
+
+### Research Context
+
+Published research (Cortez & Silva, 2008) achieved **83% accuracy** using G1 and G2 as features. However, this requires waiting 3-6 months into the school year.
+
+**Our challenge:** Predict G3 using ONLY features available on day one of school. This is harder but more valuable for early intervention.
+
+---
+
+## ✅ FEATURES TO USE FOR PREDICTION (30 features)
+
+All features EXCEPT G1, G2, and G3 are available at the start of the year and should be used:
+
+### Tier 1: Strongest Predictors (Expected high importance)
+
+These features are most likely to predict academic performance based on educational research:
+
+1. **failures** (past class failures) - Historical performance is best predictor
+2. **studytime** (weekly study hours) - Direct measure of effort
+3. **Medu** (mother's education) - Strong socioeconomic indicator
+4. **Fedu** (father's education) - Strong socioeconomic indicator  
+5. **higher** (wants higher education) - Motivation indicator
+6. **absences** (school absences) - Can't learn if not present
+7. **age** (student age) - Older in same grade may indicate past struggles
+
+### Tier 2: Moderate Predictors (Expected moderate importance)
+
+8. **famsup** (family educational support)
+9. **schoolsup** (extra school support)
+10. **Dalc** (workday alcohol consumption)
+11. **goout** (going out frequency)
+12. **famrel** (family relationship quality)
+13. **health** (health status)
+14. **paid** (extra paid classes)
+
+### Tier 3: Contextual Factors (May have indirect effects)
+
+15. **school** (which school)
+16. **sex** (gender)
+17. **address** (urban/rural)
+18. **Pstatus** (parents together/apart)
+19. **famsize** (family size)
+20. **guardian** (primary guardian)
+21. **traveltime** (commute time)
+22. **Mjob** (mother's job)
+23. **Fjob** (father's job)
+24. **reason** (school choice reason)
+25. **internet** (internet access)
+26. **romantic** (in relationship)
+27. **freetime** (free time amount)
+28. **Walc** (weekend alcohol consumption)
+29. **activities** (extracurricular activities)
+30. **nursery** (attended preschool)
+
+---
+
+## 🎯 Modeling Strategy
+
+### Expected Performance
+
+Without G1 and G2:
+- **Realistic target:** 65-70% accuracy
+- **Excellent result:** 70-75% accuracy
+- **Outstanding:** 75%+ accuracy
+
+This is significantly harder than the 83% achieved WITH mid-term grades, but more valuable for early intervention.
+
+### Why Lower Accuracy is Acceptable
+
+**This is still valuable because:**
+1. **Early detection** - Identifies risk at START of year (9 months earlier)
+2. **Actionable** - Teachers can intervene before students fall behind
+3. **Cost-benefit** - Even 70% accuracy is much better than no system (random would be 33% for 3 classes)
+4. **Preventive** - Can prevent failure rather than respond to it
+
+### Target Variable Transformation
+
+We will convert G3 (0-20 scale) into risk categories:
+
+- **High Risk:** G3 < 10 (Failing - below passing grade)
+- **Medium Risk:** G3 = 10-13 (Passing but vulnerable)
+- **Low Risk:** G3 ≥ 14 (Strong performance)
+
+This makes the prediction task more aligned with intervention needs - educators care about "who needs help?" not exact grade points.
+
+---
+
+## 📊 Feature Engineering Considerations
+
+### Potential Derived Features
+
+We may create additional features by combining existing ones:
+
+1. **parent_edu_avg** = (Medu + Fedu) / 2 - Average parental education
+2. **total_alcohol** = Dalc + Walc - Total weekly alcohol consumption
+3. **support_total** = schoolsup + famsup + paid - Total support received (count of yes)
+4. **is_older** = 1 if age > 17, else 0 - Flag for older students
+
+### Categorical Encoding
+
+Binary features (yes/no) will be encoded as 0/1.
+
+Nominal features (Mjob, Fjob, reason, guardian) will be one-hot encoded:
+- Example: Mjob → Mjob_teacher, Mjob_health, Mjob_services, Mjob_at_home, Mjob_other
+
+---
+
+## 🔍 Data Quality Notes
+
+- **No missing values** - All 1,044 records have complete data
+- **No duplicates** - 382 students appear in BOTH Math and Portuguese datasets, but as separate course enrollments (this is valid)
+- **Outliers in absences** - Range 0-93 days; very high values may need investigation
+- **Scale differences** - Mix of binary (0/1), ordinal (1-5), and count (0-93) features; may need normalization for some models
+
+---
+
+## 📚 References
+
+**Original Dataset:**
+- Cortez, P., & Silva, A. M. G. (2008). "Using Data Mining to Predict Secondary School Student Performance." Proceedings of 5th Annual Future Business Technology Conference, EUROSIS.
+- Dataset: https://archive.ics.uci.edu/dataset/320/student+performance
+
+**Key Finding from Original Research:**
+- 83% accuracy achieved using G1 and G2 as features
+- Our goal: 70%+ accuracy WITHOUT G1 and G2 for early intervention
+
+---
+
+## ✨ Summary for Modeling Team
+
+### What We Know
+
+1. **33 total features** in dataset
+2. **30 features available** at start of year (exclude G1, G2, G3)
+3. **G3 is our target** variable (convert to High/Medium/Low risk)
+4. **1,044 student-course records** for training
+
+### What We Expect
+
+1. **Strong predictors:** failures, studytime, parent education, higher, absences
+2. **Target accuracy:** 70%+ (without mid-term grades)
+3. **Challenges:** Harder than published research (no G1/G2), but more valuable
+4. **Approach:** Classification (risk levels) not regression (exact grades)
+
+### Next Steps
+
+1. ✅ Data dictionary complete
+2. ⏭️ Exploratory Data Analysis (correlations, distributions)
+3. ⏭️ Feature engineering (one-hot encoding, derived features)
+4. ⏭️ Model training (Logistic Regression → Random Forest)
+5. ⏭️ Evaluation and interpretation
