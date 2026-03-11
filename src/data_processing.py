@@ -138,16 +138,19 @@ def engineer_features(df):
     Engineer new features from existing student data.
     
     This function creates meaningful derived features that can improve model performance
-    by capturing relationships and patterns in the data.
+    by capturing relationships and patterns in the data. All features use only baseline
+    data available at the start of the year (no G1/G2 grades).
     
     New Features Created:
-    - grade_improvement: Change from G1 to G3 (G3 - G1)
-    - grade_trend: Average improvement per period ((G2-G1) + (G3-G2)) / 2
     - total_alcohol: Sum of weekday and weekend alcohol consumption (Dalc + Walc)
+    - parent_edu_avg: Average of mother's and father's education levels
     - study_time_binary: Binary indicator for high study time (studytime >= 3)
     - failure_flag: Binary indicator for past failures (failures > 0)
-    - parent_education: Average of mother's and father's education levels
-    - social_score: Combined social activity score (goout + freetime)
+    - social_score: Average social activity score (goout + freetime) / 2
+    - total_support: Has any academic support (schoolsup OR famsup)
+    - study_to_failure_ratio: Study effort relative to past challenges
+    - high_absence: Flag for excessive absences (> 10)
+    - both_parents_educated: Both parents have secondary education or higher
     
     Parameters:
         df (pd.DataFrame): DataFrame containing student data with required columns
@@ -162,7 +165,7 @@ def engineer_features(df):
     Example:
         >>> df = load_and_combine_data()
         >>> df = engineer_features(df)
-        >>> print(f"New features added: {['grade_improvement', 'grade_trend', 'total_alcohol']}")
+        >>> print(f"Total features created: 9")
     """
     try:
         # Validate input DataFrame
@@ -170,8 +173,8 @@ def engineer_features(df):
             raise ValueError("Input DataFrame is empty.")
         
         # Required columns for feature engineering
-        required_cols = ['G1', 'G2', 'G3', 'Dalc', 'Walc', 'studytime', 
-                        'failures', 'Medu', 'Fedu', 'goout', 'freetime']
+        required_cols = ['Dalc', 'Walc', 'studytime', 'failures', 'Medu', 'Fedu', 
+                        'goout', 'freetime', 'schoolsup', 'famsup', 'absences']
         
         # Check if all required columns exist
         missing_cols = [col for col in required_cols if col not in df.columns]
@@ -184,37 +187,49 @@ def engineer_features(df):
         print("Creating engineered features...")
         print("=" * 60)
         
-        # 1. Grade improvement (G3 - G1)
-        df['grade_improvement'] = df['G3'] - df['G1']
-        print("✓ Created 'grade_improvement' (G3 - G1)")
+        # KEEP THESE 5 FEATURES
         
-        # 2. Grade trend (average improvement per period)
-        df['grade_trend'] = ((df['G2'] - df['G1']) + (df['G3'] - df['G2'])) / 2
-        print("✓ Created 'grade_trend' (average grade change per period)")
-        
-        # 3. Total alcohol consumption
+        # 1. Total alcohol consumption
         df['total_alcohol'] = df['Dalc'] + df['Walc']
         print("✓ Created 'total_alcohol' (Dalc + Walc)")
         
-        # 4. Study time binary (high vs low)
+        # 2. Parent education average
+        df['parent_edu_avg'] = (df['Medu'] + df['Fedu']) / 2
+        print("✓ Created 'parent_edu_avg' (average of Medu and Fedu)")
+        
+        # 3. Study time binary (high vs low)
         df['study_time_binary'] = (df['studytime'] >= 3).astype(int)
         print("✓ Created 'study_time_binary' (studytime >= 3)")
         
-        # 5. Failure flag
+        # 4. Failure flag
         df['failure_flag'] = (df['failures'] > 0).astype(int)
         print("✓ Created 'failure_flag' (failures > 0)")
         
-        # 6. Parent education (average of both parents)
-        df['parent_education'] = (df['Medu'] + df['Fedu']) / 2
-        print("✓ Created 'parent_education' (average of Medu and Fedu)")
+        # 5. Social score
+        df['social_score'] = (df['goout'] + df['freetime']) / 2
+        print("✓ Created 'social_score' (average of goout + freetime)")
         
-        # 7. Social score
-        df['social_score'] = df['goout'] + df['freetime']
-        print("✓ Created 'social_score' (goout + freetime)")
+        # ADD THESE 4 NEW FEATURES
+        
+        # 6. Total support (school OR family support)
+        df['total_support'] = ((df['schoolsup'] == 'yes') | (df['famsup'] == 'yes')).astype(int)
+        print("✓ Created 'total_support' (has schoolsup OR famsup)")
+        
+        # 7. Study to failure ratio
+        df['study_to_failure_ratio'] = df['studytime'] / (df['failures'] + 1)
+        print("✓ Created 'study_to_failure_ratio' (studytime / (failures + 1))")
+        
+        # 8. High absence flag
+        df['high_absence'] = (df['absences'] > 10).astype(int)
+        print("✓ Created 'high_absence' (absences > 10)")
+        
+        # 9. Both parents educated
+        df['both_parents_educated'] = ((df['Medu'] >= 3) & (df['Fedu'] >= 3)).astype(int)
+        print("✓ Created 'both_parents_educated' (Medu >= 3 AND Fedu >= 3)")
         
         print("=" * 60)
         print(f"✓ Feature engineering completed successfully!")
-        print(f"✓ Total new features created: 7")
+        print(f"✓ Total new features created: 9")
         print(f"✓ New dataset shape: {df.shape}")
         
         return df
@@ -230,6 +245,7 @@ def engineer_features(df):
     except Exception as e:
         print(f"Unexpected error during feature engineering: {e}")
         raise
+
 
 
 def split_and_scale_data(X, y):
