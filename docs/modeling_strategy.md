@@ -78,3 +78,16 @@ Primary metric:
 
 - Validation accuracy ≥ 65% (Week 5 checkpoint)
 - Final model accuracy ≥ 70%
+
+---
+
+## Additional Techniques (implemented in Week 5 RF notebook)
+
+### Class Imbalance — SMOTE
+High Risk is the minority class (~22% of data). We use SMOTE (Synthetic Minority Oversampling Technique) to generate synthetic samples for the minority class in the training set only. The validation set is never resampled. When SMOTE is used, `class_weight` is not passed to the model (the two strategies should not be combined).
+
+### Comparison Model — Gradient Boosting
+A `GradientBoostingClassifier` is trained with fixed parameters (n_estimators=200, max_depth=4, learning_rate=0.1) as a comparison to the Random Forest. If it outperforms the RF on the validation set, it is saved as `gradient_boosting.pkl` for Week 7 consideration.
+
+### Threshold Tuning for High Risk Recall
+The default decision threshold (0.5) under-detects High Risk students. We evaluate thresholds from 0.20 to 0.50 and select the threshold that maximises High Risk recall while keeping High Risk precision ≥ 0.45. The best threshold is reported and applied at inference time.
