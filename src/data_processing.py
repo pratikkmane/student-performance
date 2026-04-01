@@ -65,9 +65,9 @@ def create_risk_categories(df):
     final grade performance. The categories help identify students who may need additional support.
     
     Risk Categories:
-    - Low: G3 >= 12 (good performance)
-    - Medium: 10 <= G3 < 12 (average performance)
-    - High: G3 < 10 (at-risk, needs intervention)
+    - Low: G3 >= 14 (good performance)
+    - Medium: 10 <= G3 <= 13 (average performance)
+    - High: G3 <= 9 (at-risk, needs intervention)
     
     Parameters:
         df (pd.DataFrame): DataFrame containing student data with 'G3' column
@@ -141,7 +141,7 @@ def engineer_features(df):
     by capturing relationships and patterns in the data. All features use only baseline
     data available at the start of the year (no G1/G2 grades).
     
-    New Features Created:
+    New Features Created (14 total):
     - total_alcohol: Sum of weekday and weekend alcohol consumption (Dalc + Walc)
     - parent_edu_avg: Average of mother's and father's education levels
     - study_time_binary: Binary indicator for high study time (studytime >= 3)
@@ -151,6 +151,11 @@ def engineer_features(df):
     - study_to_failure_ratio: Study effort relative to past challenges
     - high_absence: Flag for excessive absences (> 10)
     - both_parents_educated: Both parents have secondary education or higher
+    - academic_support_score: Count of active academic support channels (0–3)
+    - family_quality_score: Family relationship quality + family support
+    - health_risk_flag: Poor health indicator (health <= 2)
+    - absence_risk_flag: High absence risk (absences > 15)
+    - weekend_alcohol_flag: High weekend drinking indicator (Walc >= 4)
     
     Parameters:
         df (pd.DataFrame): DataFrame containing student data with required columns
@@ -165,7 +170,7 @@ def engineer_features(df):
     Example:
         >>> df = load_and_combine_data()
         >>> df = engineer_features(df)
-        >>> print(f"Total features created: 9")
+        >>> print(f"Total features created: 14")
     """
     try:
         # Validate input DataFrame
@@ -173,8 +178,9 @@ def engineer_features(df):
             raise ValueError("Input DataFrame is empty.")
         
         # Required columns for feature engineering
-        required_cols = ['Dalc', 'Walc', 'studytime', 'failures', 'Medu', 'Fedu', 
-                        'goout', 'freetime', 'schoolsup', 'famsup', 'absences']
+        required_cols = ['Dalc', 'Walc', 'studytime', 'failures', 'Medu', 'Fedu',
+                        'goout', 'freetime', 'schoolsup', 'famsup', 'absences',
+                        'famrel', 'health', 'paid', 'activities']
         
         # Check if all required columns exist
         missing_cols = [col for col in required_cols if col not in df.columns]
@@ -226,10 +232,36 @@ def engineer_features(df):
         # 9. Both parents educated
         df['both_parents_educated'] = ((df['Medu'] >= 3) & (df['Fedu'] >= 3)).astype(int)
         print("✓ Created 'both_parents_educated' (Medu >= 3 AND Fedu >= 3)")
-        
+
+        # --- 5 NEW FEATURES (added to improve model accuracy) ---
+
+        # 10. Academic support score — how many academic support channels active
+        df['academic_support_score'] = (
+            (df['schoolsup'] == 'yes').astype(int) +
+            (df['paid'] == 'yes').astype(int) +
+            (df['activities'] == 'yes').astype(int)
+        )
+        print("✓ Created 'academic_support_score' (schoolsup + paid + activities)")
+
+        # 11. Family quality score — relationship quality + family support
+        df['family_quality_score'] = df['famrel'] + (df['famsup'] == 'yes').astype(int)
+        print("✓ Created 'family_quality_score' (famrel + famsup)")
+
+        # 12. Health risk flag — poor health (1–2 on 1–5 scale) signals dropout risk
+        df['health_risk_flag'] = (df['health'] <= 2).astype(int)
+        print("✓ Created 'health_risk_flag' (health <= 2)")
+
+        # 13. Absence risk flag — stricter threshold than high_absence (>10)
+        df['absence_risk_flag'] = (df['absences'] > 15).astype(int)
+        print("✓ Created 'absence_risk_flag' (absences > 15)")
+
+        # 14. Weekend alcohol flag — high weekend drinking (4–5 on 1–5 scale)
+        df['weekend_alcohol_flag'] = (df['Walc'] >= 4).astype(int)
+        print("✓ Created 'weekend_alcohol_flag' (Walc >= 4)")
+
         print("=" * 60)
         print(f"✓ Feature engineering completed successfully!")
-        print(f"✓ Total new features created: 9")
+        print(f"✓ Total new features created: 14")
         print(f"✓ New dataset shape: {df.shape}")
         
         return df

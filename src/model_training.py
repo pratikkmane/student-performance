@@ -3,82 +3,6 @@ import numpy as np
 from pathlib import Path
 
 
-# def load_train_validation_data():
-#     """
-#     Load pre-split and validated train/validation data.
-    
-#     This function loads the train and validation sets that have already been
-#     split (70/15/15), scaled, and validated by the data validation notebook.
-#     The data has been preprocessed with StandardScaler (mean ≈ 0, std ≈ 1).
-    
-#     Returns:
-#         tuple: (X_train, X_val, y_train, y_val, feature_names)
-#             - X_train: Scaled training features (numpy array, shape: 730 x 43)
-#             - X_val: Scaled validation features (numpy array, shape: 157 x 43)
-#             - y_train: Training target values (numpy array, shape: 730)
-#             - y_val: Validation target values (numpy array, shape: 157)
-#             - feature_names: List of 43 feature column names
-            
-#     Raises:
-#         FileNotFoundError: If split data files are not found
-#         Exception: If data loading fails
-        
-#     Example:
-#         >>> X_train, X_val, y_train, y_val, features = load_train_validation_data()
-#         >>> print(f"Training samples: {len(X_train)}, Validation samples: {len(X_val)}")
-#         Training samples: 730, Validation samples: 157
-#     """
-#     try:
-#         print("Loading train/validation data...")
-#         print("=" * 60)
-        
-#         # Define paths to the split data
-#         data_path = Path(__file__).parent.parent / 'data' / 'processed'
-        
-#         # Load the split datasets
-#         print("\n[1/3] Loading training data...")
-#         X_train = pd.read_csv(data_path / 'X_train.csv')
-#         y_train = pd.read_csv(data_path / 'y_train.csv')
-        
-#         print("[2/3] Loading validation data...")
-#         X_val = pd.read_csv(data_path / 'X_val.csv')
-#         y_val = pd.read_csv(data_path / 'y_val.csv')
-        
-#         # Get feature names before converting to numpy
-#         feature_names = X_train.columns.tolist()
-        
-#         # Convert to numpy arrays
-#         X_train = X_train.values
-#         X_val = X_val.values
-#         y_train = y_train.values.ravel()
-#         y_val = y_val.values.ravel()
-        
-#         print("[3/3] Data loaded successfully!")
-        
-#         print("\n" + "=" * 60)
-#         print("Dataset Information:")
-#         print("=" * 60)
-#         print(f"  Training samples: {len(X_train)}")
-#         print(f"  Validation samples: {len(X_val)}")
-#         print(f"  Number of features: {len(feature_names)}")
-#         print(f"  Target variable: G3 (final grade)")
-#         print(f"  Data split: 70/15/15 (Train/Val/Test)")
-#         print(f"  Scaling: StandardScaler applied (mean ≈ 0, std ≈ 1)")
-        
-#         print("\n✓ Train/validation data ready for modeling!")
-#         print("=" * 60)
-        
-#         return X_train, X_val, y_train, y_val, feature_names
-        
-#     except FileNotFoundError:
-#         print(f"\nError: Could not find split data files in {data_path}")
-#         print("Please ensure the data validation notebook (12_data_validation.ipynb) has been run.")
-#         print("Expected files: X_train.csv, y_train.csv, X_val.csv, y_val.csv")
-#         raise
-        
-#     except Exception as e:
-#         print(f"\nError loading train/validation data: {e}")
-#         raise
 
 def load_train_validation_data(target='risk_category'):
     """
@@ -147,6 +71,92 @@ def load_train_validation_data(target='risk_category'):
         
     except Exception as e:
         print(f"\nError loading data: {e}")
+        raise
+
+
+def train_random_forest(X_train, y_train, X_val, y_val, n_iter=50):
+    """
+    Train a Random Forest classifier with RandomizedSearchCV hyperparameter tuning.
+
+    Mirrors the tuning approach in notebooks/15_random_forest.ipynb so the
+    Streamlit app (Week 6) can retrain the model from the UI without needing
+    to re-run the full notebook.
+
+    Parameters:
+        X_train (np.ndarray): Training features (scaled)
+        y_train (np.ndarray): Training target labels (risk_category strings)
+        X_val (np.ndarray): Validation features (scaled)
+        y_val (np.ndarray): Validation target labels
+        n_iter (int): Number of RandomizedSearchCV iterations (default 50)
+
+    Returns:
+        tuple: (best_model, best_params, val_accuracy)
+            - best_model: Trained RandomForestClassifier with best parameters
+            - best_params: Dictionary of best hyperparameters found
+            - val_accuracy: Validation accuracy of the best model (float)
+
+    Example:
+        >>> X_train, X_val, y_train, y_val, features = load_train_validation_data()
+        >>> model, params, acc = train_random_forest(X_train, y_train, X_val, y_val)
+        >>> print(f"Validation accuracy: {acc:.4f}")
+    """
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold
+    from sklearn.metrics import accuracy_score
+
+    try:
+        print("Training Random Forest model with RandomizedSearchCV...")
+        print("=" * 60)
+
+        param_dist = {
+            'n_estimators': [100, 200, 300, 500],
+            'max_depth': [5, 8, 10, 12, 15, None],
+            'min_samples_split': [5, 10, 15, 20],
+            'min_samples_leaf': [2, 4, 5, 8],
+            'max_features': ['sqrt', 'log2'],
+            'class_weight': ['balanced', 'balanced_subsample', None],
+        }
+
+        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+
+        search = RandomizedSearchCV(
+            estimator=RandomForestClassifier(random_state=42, n_jobs=-1),
+            param_distributions=param_dist,
+            n_iter=n_iter,
+            cv=cv,
+            scoring='accuracy',
+            random_state=42,
+            n_jobs=-1,
+            verbose=0,
+        )
+
+        print(f"\nRunning RandomizedSearchCV ({n_iter} iterations, 5-fold CV)...")
+        search.fit(X_train, y_train)
+
+        best_model = search.best_estimator_
+        best_params = search.best_params_
+        val_accuracy = accuracy_score(y_val, best_model.predict(X_val))
+
+        print(f"\n✓ RandomizedSearchCV complete!")
+        print(f"  Best CV score (train):  {search.best_score_*100:.2f}%")
+        print(f"  Validation accuracy:    {val_accuracy*100:.2f}%")
+        print(f"  Best params: {best_params}")
+
+        if val_accuracy >= 0.70:
+            print("\n🎉 SUCCESS: Achieved 70%+ target!")
+        elif val_accuracy >= 0.65:
+            print("\n✓ Good: Above 65% minimum (Week 5 success criterion)")
+        else:
+            print(f"\n⚠️  Below 65% target ({val_accuracy*100:.2f}%)")
+
+        print("\n" + "=" * 60)
+        print("✓ Random Forest training complete!")
+        print("=" * 60)
+
+        return best_model, best_params, val_accuracy
+
+    except Exception as e:
+        print(f"Error training Random Forest: {e}")
         raise
 
 
@@ -355,17 +365,16 @@ def calculate_metrics(y_true, y_pred):
         classes = ['High', 'Medium', 'Low']
         metrics_data = []
         
-        for cls in classes:
-            # Use average='macro' for multiclass
-            precision = precision_score(y_true, y_pred, labels=[cls], average='macro', zero_division=0)
-            recall = recall_score(y_true, y_pred, labels=[cls], average='macro', zero_division=0)
-            f1 = f1_score(y_true, y_pred, labels=[cls], average='macro', zero_division=0)
-            
+        precisions = precision_score(y_true, y_pred, labels=classes, average=None, zero_division=0)
+        recalls    = recall_score(   y_true, y_pred, labels=classes, average=None, zero_division=0)
+        f1s        = f1_score(       y_true, y_pred, labels=classes, average=None, zero_division=0)
+
+        for i, cls in enumerate(classes):
             metrics_data.append({
                 'Risk Category': cls,
-                'Precision': precision,
-                'Recall': recall,
-                'F1 Score': f1
+                'Precision': precisions[i],
+                'Recall':    recalls[i],
+                'F1 Score':  f1s[i]
             })
         
         metrics_df = pd.DataFrame(metrics_data)
@@ -475,43 +484,3 @@ def save_model(model, filename):
         print(f"Error saving model: {e}")
         raise
 
-# def train_logistic_regression(X_train, y_train, X_val, y_val):
-#     """
-#     Train a Logistic Regression model as a baseline comparison.
-    
-#     Parameters:
-#         X_train, y_train: Training data
-#         X_val, y_val: Validation data
-        
-#     Returns:
-#         tuple: (model, y_pred)
-#     """
-#     from sklearn.linear_model import LogisticRegression
-#     from sklearn.metrics import accuracy_score
-    
-#     try:
-#         print("Training Logistic Regression model...")
-#         print("=" * 60)
-        
-#         # Initialize and train
-#         # multi_class is no longer needed in newer sklearn versions
-#         model = LogisticRegression(
-#             solver='lbfgs',
-#             max_iter=1000,
-#             class_weight='balanced',
-#             random_state=42
-#         )
-#         model.fit(X_train, y_train)
-        
-#         y_pred = model.predict(X_val)
-#         acc = accuracy_score(y_val, y_pred)
-        
-#         print(f"✓ Logistic Regression Trained!")
-#         print(f"  Validation Accuracy: {acc:.4f}")
-#         print("=" * 60)
-        
-#         return model, y_pred
-        
-#     except Exception as e:
-#         print(f"Error training Logistic Regression: {e}")
-#         raise
