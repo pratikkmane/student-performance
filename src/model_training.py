@@ -3,7 +3,6 @@ import numpy as np
 from pathlib import Path
 
 
-
 def load_train_validation_data(target='risk_category'):
     """
     Load pre-split and validated train/validation data.
