@@ -6,11 +6,48 @@ from joblib import load
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, confusion_matrix
 import plotly.graph_objects as go
 import plotly.express as px
+from pathlib import Path
 
 st.set_page_config(page_title="Model Performance & Info", layout="wide")
-
 st.title("Model Performance & Info")
 st.markdown("This page summarizes how the trained models performed and how to interpret the final model.")
+
+# ============================================================================
+# LOAD CUSTOM CSS
+# ============================================================================
+
+def load_css():
+    """Load custom CSS styling."""
+    css_file = Path(__file__).parent.parent / "assets" / "style.css"
+    if css_file.exists():
+        with open(css_file) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css()
+
+# ============================================================================
+# SIDEBAR BRANDING
+# ============================================================================
+
+with st.sidebar:
+    st.markdown("""
+        <div class="logo-container">
+            <h1 style="color: white; font-size: 1.5rem; margin-bottom: 0;">🎓</h1>
+            <h2 style="color: white; font-size: 1.2rem; margin-top: 0;">Student Performance</h2>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">AI-Powered Risk Predictor</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.markdown("### 👥 Team")
+    st.markdown("""
+    <small style="color: rgba(255,255,255,0.9);">
+    <b>Lead:</b> Pratik Mane<br>
+    <b>Members:</b> Emmanuel Atilola, Yugant Nagralawala, Hamza Almani<br>
+    <b>Advisor:</b> Prof. Leon Johnson
+    </small>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

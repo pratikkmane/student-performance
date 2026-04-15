@@ -1,0 +1,495 @@
+/* ============================================================================
+   STUDENT PERFORMANCE PREDICTOR - CUSTOM STYLES
+   ============================================================================ */
+
+/* Color Palette */
+:root {
+    /* Primary Colors */
+    --primary-blue: #1E88E5;
+    --primary-dark: #0D47A1;
+    --primary-light: #64B5F6;
+    
+    /* Accent Colors */
+    --accent-green: #43A047;
+    --accent-orange: #FB8C00;
+    --accent-red: #E53935;
+    
+    /* Neutral Colors */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: #F5F7FA;
+    --text-primary: #212121;
+    --text-secondary: #757575;
+    --border-color: #E0E0E0;
+    
+    /* Risk Colors */
+    --risk-high: #EF5350;
+    --risk-medium: #FFA726;
+    --risk-low: #66BB6A;
+    
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+}
+
+/* ============================================================================
+   GLOBAL STYLES
+   ============================================================================ */
+
+/* Main App Container */
+.main {
+    background-color: var(--bg-secondary);
+    padding: var(--spacing-lg);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 3px solid var(--primary-blue);
+    padding-bottom: var(--spacing-sm);
+}
+
+h2 {
+    font-size: 1.75rem;
+    color: var(--primary-dark);
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+}
+
+h3 {
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.stButton > button {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+}
+
+.stButton > button:active {
+    transform: translateY(0);
+}
+
+/* Download Buttons */
+.stDownloadButton > button {
+    background-color: var(--accent-green);
+    color: white;
+    border-radius: 6px;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.stDownloadButton > button:hover {
+    background-color: #2E7D32;
+    transform: translateY(-1px);
+}
+
+/* ============================================================================
+   FORMS & INPUTS
+   ============================================================================ */
+
+/* Form Container */
+.stForm {
+    background-color: var(--bg-primary);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    background-color: var(--bg-primary);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    font-weight: 600;
+    color: var(--primary-dark);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.streamlit-expanderHeader:hover {
+    background-color: var(--primary-light);
+    color: white;
+}
+
+/* Input Fields */
+.stTextInput > div > div > input,
+.stNumberInput > div > div > input {
+    border-radius: 6px;
+    border: 2px solid var(--border-color);
+    padding: 0.5rem;
+    transition: border-color 0.3s ease;
+}
+
+.stTextInput > div > div > input:focus,
+.stNumberInput > div > div > input:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.1);
+}
+
+/* Select Boxes */
+.stSelectbox > div > div {
+    border-radius: 6px;
+}
+
+/* Sliders */
+.stSlider > div > div > div {
+    background-color: var(--primary-blue);
+}
+
+/* ============================================================================
+   METRICS & CARDS
+   ============================================================================ */
+
+/* Metric Cards */
+.stMetric {
+    background-color: var(--bg-primary);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid var(--primary-blue);
+}
+
+.stMetric > label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.stMetric > div {
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+/* Info/Warning/Error Boxes */
+.stAlert {
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+}
+
+div[data-baseweb="notification"] {
+    border-radius: 8px;
+}
+
+/* Success */
+.stSuccess {
+    background-color: #E8F5E9;
+    border-left: 4px solid var(--accent-green);
+}
+
+/* Info */
+.stInfo {
+    background-color: #E3F2FD;
+    border-left: 4px solid var(--primary-blue);
+}
+
+/* Warning */
+.stWarning {
+    background-color: #FFF3E0;
+    border-left: 4px solid var(--accent-orange);
+}
+
+/* Error */
+.stError {
+    background-color: #FFEBEE;
+    border-left: 4px solid var(--accent-red);
+}
+
+/* ============================================================================
+   SIDEBAR
+   ============================================================================ */
+
+/* Sidebar Container */
+.css-1d391kg, [data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #1E88E5 0%, #0D47A1 100%);
+    padding: var(--spacing-lg);
+}
+
+/* Sidebar Text */
+.css-1d391kg h1,
+.css-1d391kg h2,
+.css-1d391kg h3,
+.css-1d391kg p,
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] p {
+    color: white !important;
+}
+
+/* Sidebar Widgets */
+[data-testid="stSidebar"] .stSelectbox label,
+[data-testid="stSidebar"] .stMetric label {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Sidebar Navigation */
+[data-testid="stSidebarNav"] {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: var(--spacing-sm);
+}
+
+[data-testid="stSidebarNav"] a {
+    color: white;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+[data-testid="stSidebarNav"] a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================================================
+   PROGRESS & LOADING
+   ============================================================================ */
+
+/* Progress Bar */
+.stProgress > div > div > div {
+    background-color: var(--primary-blue);
+    border-radius: 4px;
+}
+
+/* Spinner */
+.stSpinner > div {
+    border-color: var(--primary-blue) transparent transparent transparent;
+}
+
+/* ============================================================================
+   TABLES & DATAFRAMES
+   ============================================================================ */
+
+/* Dataframe */
+.dataframe {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dataframe thead th {
+    background-color: var(--primary-blue);
+    color: white;
+    font-weight: 600;
+    padding: var(--spacing-md);
+}
+
+.dataframe tbody tr:nth-child(even) {
+    background-color: var(--bg-secondary);
+}
+
+.dataframe tbody tr:hover {
+    background-color: rgba(30, 136, 229, 0.1);
+}
+
+/* ============================================================================
+   CHARTS & VISUALIZATIONS
+   ============================================================================ */
+
+/* Plotly Charts */
+.js-plotly-plot {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: var(--bg-primary);
+    padding: var(--spacing-sm);
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.footer {
+    background-color: var(--bg-primary);
+    border-top: 2px solid var(--border-color);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+    text-align: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.footer p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: var(--spacing-xs) 0;
+}
+
+.footer a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.footer a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .stButton > button {
+        width: 100%;
+        margin-bottom: var(--spacing-sm);
+    }
+    
+    .main {
+        padding: var(--spacing-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stMetric > div {
+        font-size: 1.25rem;
+    }
+}
+
+/* ============================================================================
+   CUSTOM COMPONENTS
+   ============================================================================ */
+
+/* Risk Badge */
+.risk-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.risk-high {
+    background-color: var(--risk-high);
+    color: white;
+}
+
+.risk-medium {
+    background-color: var(--risk-medium);
+    color: white;
+}
+
+.risk-low {
+    background-color: var(--risk-low);
+    color: white;
+}
+
+/* Feature Card */
+.feature-card {
+    background-color: var(--bg-primary);
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Logo Container */
+.logo-container {
+    text-align: center;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.logo-container img {
+    max-width: 200px;
+    height: auto;
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* ============================================================================
+   UTILITIES
+   ============================================================================ */
+
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+.mt-4 { margin-top: var(--spacing-xl); }
+
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }
+.mb-4 { margin-bottom: var(--spacing-xl); }
+
+.p-1 { padding: var(--spacing-sm); }
+.p-2 { padding: var(--spacing-md); }
+.p-3 { padding: var(--spacing-lg); }
+.p-4 { padding: var(--spacing-xl); }
