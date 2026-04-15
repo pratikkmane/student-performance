@@ -58,36 +58,52 @@ st.markdown("""
         font-weight: 600;
     }
     .info-card {
-        background: #F3F6FA;
+        background: rgba(30, 136, 229, 0.15);  /* Semi-transparent blue */
         border-left: 4px solid #1976D2;
         padding: 14px 18px;
         border-radius: 0 8px 8px 0;
         margin-bottom: 10px;
+        color: inherit;  /* Inherits text color from theme */
+    }
+    .info-card b {
+        color: #64B5F6;  /* Lighter blue for labels in dark mode */
     }
     .metric-card {
-        background: #E8F5E9;
+        background: rgba(67, 160, 71, 0.15);  /* Semi-transparent green */
         border-left: 4px solid #43A047;
         padding: 14px 18px;
         border-radius: 0 8px 8px 0;
         margin-bottom: 10px;
+        color: inherit;
+    }
+    .metric-card b {
+        color: #81C784;  /* Lighter green for labels */
     }
     .warning-card {
-        background: #FFF8E1;
+        background: rgba(255, 160, 0, 0.15);  /* Semi-transparent orange */
         border-left: 4px solid #FFA000;
         padding: 14px 18px;
         border-radius: 0 8px 8px 0;
         margin-bottom: 10px;
+        color: inherit;
+    }
+    .warning-card b {
+        color: #FFB74D;  /* Lighter orange for labels */
     }
     .step-box {
-        background: #EDE7F6;
+        background: rgba(123, 97, 255, 0.15);  /* Semi-transparent purple */
         border-radius: 8px;
         padding: 10px 16px;
         margin: 6px 0;
         font-size: 0.97rem;
+        color: inherit;
     }
-    .risk-high  { color: #C62828; font-weight: 700; }
-    .risk-med   { color: #E65100; font-weight: 700; }
-    .risk-low   { color: #2E7D32; font-weight: 700; }
+    .step-box b {
+        color: #B39DDB;  /* Lighter purple for step titles */
+    }
+    .risk-high  { color: #EF5350; font-weight: 700; }
+    .risk-med   { color: #FFA726; font-weight: 700; }
+    .risk-low   { color: #66BB6A; font-weight: 700; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -151,14 +167,30 @@ with tabs[0]:
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("### Risk Categories")
-    rc_col1, rc_col2, rc_col3 = st.columns(3)
-    with rc_col1:
-        st.error("**High Risk** — Final grade < 10\nStudent likely to fail without intervention.")
-    with rc_col2:
-        st.warning("**Medium Risk** — Final grade 10–13\nStudent is borderline; monitoring recommended.")
-    with rc_col3:
-        st.success("**Low Risk** — Final grade ≥ 14\nStudent is on track to pass comfortably.")
+    st.markdown("## Risk Categories")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.markdown("""
+        <div style="background-color: rgba(211, 47, 47, 0.6); color: white; padding: 20px; border-radius: 8px; min-height: 120px;">
+            <strong style="font-size: 1.1rem;">High Risk</strong> — Final grade < 10 Student likely to fail without intervention.
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown("""
+        <div style="background-color: rgba(255, 152, 0, 0.6); color: white; padding: 20px; border-radius: 8px; min-height: 120px;">
+            <strong style="font-size: 1.1rem;">Medium Risk</strong> — Final grade 10–13 Student is borderline; monitoring recommended.
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
+        st.markdown("""
+        <div style="background-color: rgba(56, 142, 60, 0.6); color: white; padding: 20px; border-radius: 8px; min-height: 120px;">
+            <strong style="font-size: 1.1rem;">Low Risk</strong> — Final grade ≥ 14 Student is on track to pass comfortably.
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

@@ -296,13 +296,27 @@ if submitted:
                 st.markdown(f"**Confidence:** {confidence*100:.1f}%")
                 
                 # Probabilities
+                # Probabilities
                 st.write("### Risk Probabilities")
+
+                # Color mapping for each risk level
+                risk_colors = {
+                    'High': '#EF5350',    # Red
+                    'Medium': '#FFA726',  # Orange
+                    'Low': '#66BB6A'      # Green
+                }
+
                 for level in ['High', 'Medium', 'Low']:
                     prob = probs.get(level, 0)
                     st.write(f"**{level} Risk:** {prob*100:.1f}%")
-                    st.progress(prob)
-                
-                st.markdown("---")
+                    
+                    # Create colored progress bar using HTML
+                    color = risk_colors[level]
+                    st.markdown(f"""
+                        <div style="background-color: #E0E0E0; border-radius: 4px; height: 8px; margin-bottom: 1rem;">
+                            <div style="background-color: {color}; width: {prob*100}%; height: 100%; border-radius: 4px;"></div>
+                        </div>
+                    """, unsafe_allow_html=True)
                 
                 # Debug
                 with st.expander("🔍 Debug: Features"):
