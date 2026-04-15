@@ -3,11 +3,49 @@ import pandas as pd
 import numpy as np
 import joblib
 import plotly.graph_objects as go
+from pathlib import Path
 
 # --- Page Config ---
 st.set_page_config(page_title="What-If Analysis", page_icon="🔄", layout="wide")
 st.title("🔄 What-If Analysis Tool")
 st.markdown("Explore how changes in student behavior could affect their predicted risk level.")
+
+# ============================================================================
+# LOAD CUSTOM CSS
+# ============================================================================
+
+def load_css():
+    """Load custom CSS styling."""
+    css_file = Path(__file__).parent.parent / "assets" / "style.css"
+    if css_file.exists():
+        with open(css_file) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+load_css()
+
+# ============================================================================
+# SIDEBAR BRANDING
+# ============================================================================
+
+with st.sidebar:
+    st.markdown("""
+        <div class="logo-container">
+            <h1 style="color: white; font-size: 1.5rem; margin-bottom: 0;">🎓</h1>
+            <h2 style="color: white; font-size: 1.2rem; margin-top: 0;">Student Performance</h2>
+            <p style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">AI-Powered Risk Predictor</p>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    st.markdown("### 👥 Team")
+    st.markdown("""
+    <small style="color: rgba(255,255,255,0.9);">
+    <b>Lead:</b> Pratik Mane<br>
+    <b>Members:</b> Emmanuel Atilola, Yugant Nagralawala, Hamza Almani<br>
+    <b>Advisor:</b> Prof. Leon Johnson
+    </small>
+    """, unsafe_allow_html=True)
+    st.markdown("---")
 
 # --- Load Model ---
 @st.cache_resource
