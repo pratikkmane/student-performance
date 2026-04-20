@@ -213,45 +213,23 @@ st.session_state.current_profile = profile
 
 
 # ========================================
-# MAIN - Two Column Layout
+# MAIN - Better Layout: Controls Left, Viz Right
 # ========================================
-col_current, col_modified = st.columns(2)
 
-# --- Left: Current Profile ---
-with col_current:
-    st.subheader("📊 Current Prediction")
-    current_pred = get_prediction(profile)
-    current_class = current_pred["class"]
-    current_probs = current_pred["probabilities"]
+# Dynamic current prediction (not hardcoded)
+current_pred = get_prediction(profile)
+current_class = current_pred["class"]
+current_probs = current_pred["probabilities"]
 
-    color = RISK_COLORS.get(current_class, "#888")
-    st.markdown(
-        f'<div style="background-color:{color}; padding:20px; border-radius:10px; text-align:center;">'
-        f'<h2 style="color:white; margin:0;">{current_class} Risk</h2></div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown("")
+col_controls, col_viz = st.columns([1, 2])
 
-    st.markdown("**Current Changeable Features:**")
-    info = {
-        "Study Time": profile["studytime"],
-        "Absences": profile["absences"],
-        "School Support": "Yes" if profile["schoolsup"] else "No",
-        "Family Support": "Yes" if profile["famsup"] else "No",
-        "Paid Classes": "Yes" if profile["paid"] else "No",
-        "Workday Alcohol": profile["Dalc"],
-        "Weekend Alcohol": profile["Walc"],
-        "Going Out": profile["goout"],
-        "Health": profile["health"],
-    }
-    for k, v in info.items():
-        st.markdown(f"- **{k}:** {v}")
-
-# --- Right: What-If Scenario ---
-with col_modified:
+# --- Left Column: What-If Controls ---
+with col_controls:
     st.subheader("🔧 What-If Scenario")
     st.markdown("Adjust sliders to simulate interventions:")
-
+    
+    st.markdown("**Adjust features below:**")
+    
     modified = profile.copy()
 
     modified["studytime"] = st.slider("📚 Study Time", 1, 4, profile["studytime"], key="wif_study",
@@ -264,48 +242,32 @@ with col_modified:
     modified["Walc"] = st.slider("🍻 Weekend Alcohol", 1, 5, profile["Walc"], key="wif_walc")
     modified["goout"] = st.slider("🚶 Going Out", 1, 5, profile["goout"], key="wif_goout")
     modified["health"] = st.slider("❤️ Health", 1, 5, profile["health"], key="wif_health")
-
-    if st.button("🔄 Reset to Original", use_container_width=True):
-        st.session_state.current_profile = DEFAULT_PROFILE.copy()
-        st.rerun()
-
+    
+    # Calculate what-if prediction
     mod_pred = get_prediction(modified)
     mod_class = mod_pred["class"]
     mod_probs = mod_pred["probabilities"]
 
-    mod_color = RISK_COLORS.get(mod_class, "#888")
-    st.markdown(
-        f'<div style="background-color:{mod_color}; padding:20px; border-radius:10px; text-align:center;">'
-        f'<h2 style="color:white; margin:0;">{mod_class} Risk</h2></div>',
-        unsafe_allow_html=True,
-    )
-
-
-# ========================================
-# RISK CHANGE INDICATOR
-# ========================================
-st.markdown("---")
-risk_order = {"High": 2, "Medium": 1, "Low": 0}
-if current_class != mod_class:
-    if risk_order[mod_class] < risk_order[current_class]:
-        st.success(f"✅ **Risk level improved:** {current_class} → {mod_class}")
+# --- Right Column: Visualizations ---
+with col_viz:
+    st.subheader("📊 Impact Visualization")
+    
+    # RISK CHANGE INDICATOR
+    risk_order = {"High": 2, "Medium": 1, "Low": 0}
+    if current_class != mod_class:
+        if risk_order[mod_class] < risk_order[current_class]:
+            st.success(f"✅ **Risk level improved:** {current_class} → {mod_class}")
+        else:
+            st.error(f"⚠️ **Risk level worsened:** {current_class} → {mod_class}")
     else:
-        st.error(f"⚠️ **Risk level worsened:** {current_class} → {mod_class}")
-else:
-    st.info(f"ℹ️ **Risk level unchanged:** {current_class} — Try adjusting more features.")
+        st.info(f"ℹ️ **Risk level unchanged:** {current_class} — Try adjusting more features.")
+    
+    # COMPARISON CHARTS - stacked vertically with proper spacing
+    classes = list(current_probs.keys())
+    current_vals = [current_probs[c] * 100 for c in classes]
+    modified_vals = [mod_probs[c] * 100 for c in classes]
 
-
-# ========================================
-# COMPARISON CHARTS
-# ========================================
-st.subheader("📈 Impact Visualization")
-viz_col1, viz_col2 = st.columns(2)
-
-classes = list(current_probs.keys())
-current_vals = [current_probs[c] * 100 for c in classes]
-modified_vals = [mod_probs[c] * 100 for c in classes]
-
-with viz_col1:
+    # Chart 1: Probability Comparison
     fig_bar = go.Figure()
     fig_bar.add_trace(go.Bar(
         name="Current", x=classes, y=current_vals,
@@ -318,13 +280,17 @@ with viz_col1:
         text=[f"{v:.1f}%" for v in modified_vals], textposition="auto",
     ))
     fig_bar.update_layout(
-        title="Probability Comparison", barmode="group",
-        yaxis_title="Probability (%)", yaxis_range=[0, 100], height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    title=dict(text="Probability Comparison", y=0.95, x=0.5, xanchor='center'),
+    barmode="group",
+    yaxis_title="Probability (%)", yaxis_range=[0, 100], height=350,
+    legend=dict(orientation="h", yanchor="bottom", y=1.02),
+    margin=dict(l=20, r=20, t=50, b=20)  # Increased top margin
     )
     st.plotly_chart(fig_bar, use_container_width=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)  # Spacing between charts
 
-with viz_col2:
+    # Chart 2: Probability Shift
     shifts = {c: (mod_probs[c] - current_probs[c]) * 100 for c in classes}
     bar_colors = []
     for c, s in shifts.items():
@@ -341,56 +307,12 @@ with viz_col2:
         text=[f"{s:+.1f}%" for s in shifts.values()], textposition="auto",
     ))
     fig_shift.update_layout(
-        title="Probability Shift (Current → What-If)",
-        yaxis_title="Change (%)", height=400,
-        shapes=[dict(type="line", x0=-0.5, x1=2.5, y0=0, y1=0, line=dict(color="gray", dash="dash"))],
+    title=dict(text="Probability Shift (Current → What-If)", y=0.95, x=0.5, xanchor='center'),
+    yaxis_title="Change (%)", height=350,
+    shapes=[dict(type="line", x0=-0.5, x1=2.5, y0=0, y1=0, line=dict(color="gray", dash="dash"))],
+    margin=dict(l=20, r=20, t=50, b=20)  # Increased top margin
     )
     st.plotly_chart(fig_shift, use_container_width=True)
-
-
-# ========================================
-# INTERPRETATION TEXT
-# ========================================
-st.markdown("---")
-st.subheader("💡 Interpretation")
-
-changes = []
-if modified["studytime"] != profile["studytime"]:
-    d = "increases" if modified["studytime"] > profile["studytime"] else "decreases"
-    changes.append(f"📚 If study time **{d} from {profile['studytime']} to {modified['studytime']}**, this could shift academic engagement and predicted risk.")
-
-if modified["absences"] != profile["absences"]:
-    diff = profile["absences"] - modified["absences"]
-    if diff > 0:
-        changes.append(f"📅 **Reducing absences by {diff} days** (from {profile['absences']} to {modified['absences']}) could improve the prediction.")
-    else:
-        changes.append(f"📅 **Increasing absences by {abs(diff)} days** would likely worsen the prediction.")
-
-if modified["Dalc"] != profile["Dalc"] or modified["Walc"] != profile["Walc"]:
-    old_t = profile["Dalc"] + profile["Walc"]
-    new_t = modified["Dalc"] + modified["Walc"]
-    if new_t < old_t:
-        changes.append(f"🍺 **Reducing total alcohol from {old_t} to {new_t}** could lower the risk profile.")
-    elif new_t > old_t:
-        changes.append(f"🍺 **Increasing total alcohol** would likely raise the risk level.")
-
-if modified["schoolsup"] != profile["schoolsup"]:
-    changes.append("🏫 **Adding school support** could help reduce risk." if modified["schoolsup"] else "🏫 **Removing school support** may increase risk.")
-
-if modified["paid"] != profile["paid"]:
-    changes.append("💰 **Enrolling in paid classes** could provide additional support." if modified["paid"] else "💰 **Dropping paid classes** may negatively affect performance.")
-
-if modified["goout"] != profile["goout"] and modified["goout"] < profile["goout"]:
-    changes.append(f"🚶 **Reducing going out from {profile['goout']} to {modified['goout']}** could help focus on academics.")
-
-if modified["health"] != profile["health"] and modified["health"] > profile["health"]:
-    changes.append(f"❤️ **Improving health from {profile['health']} to {modified['health']}** is associated with better outcomes.")
-
-if changes:
-    for c in changes:
-        st.markdown(c)
-else:
-    st.markdown("*Adjust the sliders above to see how changes could impact the prediction.*")
 
 
 # ========================================
@@ -403,7 +325,7 @@ st.markdown("Test common intervention strategies:")
 s1, s2, s3, s4 = st.columns(4)
 
 with s1:
-    if st.button("📚 Max Study", use_container_width=True):
+    if st.button("📚 MAX STUDY", use_container_width=True, type="primary"):
         sc = profile.copy(); sc["studytime"] = 4
         p = get_prediction(sc)
         st.markdown(f"**{p['class']} Risk**")
@@ -411,7 +333,7 @@ with s1:
             st.markdown(f"- {cls}: {prob*100:.1f}%")
 
 with s2:
-    if st.button("🚫 No Alcohol", use_container_width=True):
+    if st.button("🚫 NO ALCOHOL", use_container_width=True, type="primary"):
         sc = profile.copy(); sc["Dalc"] = 1; sc["Walc"] = 1
         p = get_prediction(sc)
         st.markdown(f"**{p['class']} Risk**")
@@ -419,7 +341,7 @@ with s2:
             st.markdown(f"- {cls}: {prob*100:.1f}%")
 
 with s3:
-    if st.button("🌟 Full Support", use_container_width=True):
+    if st.button("🌟 FULL SUPPORT", use_container_width=True, type="primary"):
         sc = profile.copy(); sc["schoolsup"] = 1; sc["famsup"] = 1; sc["paid"] = 1
         p = get_prediction(sc)
         st.markdown(f"**{p['class']} Risk**")
@@ -427,7 +349,7 @@ with s3:
             st.markdown(f"- {cls}: {prob*100:.1f}%")
 
 with s4:
-    if st.button("✨ Best Case", use_container_width=True):
+    if st.button("✨ BEST CASE", use_container_width=True, type="primary"):
         sc = profile.copy()
         sc["studytime"] = 4; sc["absences"] = 0; sc["Dalc"] = 1; sc["Walc"] = 1
         sc["goout"] = 1; sc["health"] = 5; sc["schoolsup"] = 1; sc["famsup"] = 1; sc["paid"] = 1

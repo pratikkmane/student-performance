@@ -137,7 +137,7 @@ with col2:
 
 # Download button
 csv1 = df_filtered[['subject', 'G3']].to_csv(index=False)
-st.download_button("⬇️ Download Grade Data", csv1, "grade_distribution.csv", "text/csv")
+st.download_button("⬇️ Download Grade Data", csv1, "grade_distribution.csv", "text/csv", type="primary")
 
 st.markdown("---")
 
@@ -180,7 +180,7 @@ with col2:
 
 # Download
 csv2 = df_filtered['risk_category'].value_counts().to_csv()
-st.download_button("⬇️ Download Risk Data", csv2, "risk_distribution.csv", "text/csv")
+st.download_button("⬇️ Download Risk Data", csv2, "risk_distribution.csv", "text/csv", type="primary")
 
 st.markdown("---")
 
@@ -232,7 +232,7 @@ with col2:
 
 # Download
 csv3 = correlations.to_csv()
-st.download_button("⬇️ Download Correlation Data", csv3, "correlations.csv", "text/csv")
+st.download_button("⬇️ Download Correlation Data", csv3, "correlations.csv", "text/csv", type="primary")
 
 st.markdown("---")
 
@@ -277,7 +277,7 @@ with col2:
 
 # Download
 csv4 = df_filtered[['studytime', 'G3']].to_csv(index=False)
-st.download_button("⬇️ Download Study Time Data", csv4, "studytime_impact.csv", "text/csv")
+st.download_button("⬇️ Download Study Time Data", csv4, "studytime_impact.csv", "text/csv", type="primary")
 
 st.markdown("---")
 
@@ -325,7 +325,7 @@ with col2:
 
 # Download
 csv5 = df_filtered[['Medu', 'Fedu', 'G3']].to_csv(index=False)
-st.download_button("⬇️ Download Parent Education Data", csv5, "parent_education.csv", "text/csv")
+st.download_button("⬇️ Download Parent Education Data", csv5, "parent_education.csv", "text/csv", type="primary")
 
 st.markdown("---")
 
@@ -373,7 +373,7 @@ with col2:
 
 # Download
 csv6 = df_filtered[['absences', 'G3', 'risk_category']].to_csv(index=False)
-st.download_button("⬇️ Download Absence Data", csv6, "absences_grades.csv", "text/csv")
+st.download_button("⬇️ Download Absence Data", csv6, "absences_grades.csv", "text/csv", type="primary")
 
 st.markdown("---")
 

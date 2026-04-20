@@ -83,6 +83,7 @@ p {
 .stButton > button {
     background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
     color: white;
+    color: white !important;
     border: none;
     border-radius: 8px;
     padding: 0.75rem 2rem;
@@ -98,6 +99,7 @@ p {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-blue) 100%);
+    color: white !important; 
 }
 
 .stButton > button:active {
@@ -493,3 +495,9 @@ div[data-baseweb="notification"] {
 .p-2 { padding: var(--spacing-md); }
 .p-3 { padding: var(--spacing-lg); }
 .p-4 { padding: var(--spacing-xl); }
+
+/* Force button text color override */
+button[data-testid="stBaseButton-primary"] p,
+button[data-testid="stBaseButton-primary"] {
+    color: white !important;
+}
