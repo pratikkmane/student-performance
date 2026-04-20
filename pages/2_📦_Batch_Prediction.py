@@ -7,6 +7,9 @@ import warnings
 import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
+st.cache_data.clear()
+st.cache_resource.clear()
+
 # Feature names
 FEATURES = [
     'age', 'Medu', 'Fedu', 'traveltime', 'studytime', 'failures', 'famrel', 
@@ -21,32 +24,29 @@ FEATURES = [
 
 @st.cache_resource
 def load_models():
-    """Load all trained models"""
-    models = {}
-    model_files = {
-        'logistic_regression': 'data/models/logistic_regression.pkl',
-        'decision_tree': 'data/models/decision_tree.pkl',
-        'random_forest': 'data/models/random_forest.pkl',
-        'gradient_boosting': 'data/models/gradient_boosting.pkl'
-    }
-    
-    for model_name, model_path in model_files.items():
-        try:
-            with open(model_path, 'rb') as f:
-                models[model_name] = pickle.load(f)
-        except FileNotFoundError:
-            st.warning(f"Model not found: {model_path}")
-    
-    return models
+    """Load the trained Random Forest model"""
+    import joblib
+    try:
+        model = joblib.load('models/random_forest.pkl')
+        st.success("✓ Random Forest model loaded successfully")
+        return model
+    except FileNotFoundError:
+        st.error("❌ Random Forest model not found at models/random_forest.pkl")
+        return None
+    except Exception as e:
+        st.error(f"❌ Error loading model: {str(e)}")
+        return None
 
 @st.cache_resource
 def load_scaler():
     """Load the scaler for feature normalization"""
     try:
-        with open('data/models/scaler.pkl', 'rb') as f:
-            return pickle.load(f)
+        with open('models/scaler.pkl', 'rb') as f:
+            scaler = pickle.load(f)
+            st.success("✓ Scaler loaded successfully")
+            return scaler
     except FileNotFoundError:
-        st.warning("Scaler not found")
+        st.warning("⚠️ Scaler not found at models/scaler.pkl")
         return None
 
 def create_template_csv():
@@ -211,7 +211,7 @@ def handle_missing_values(df):
     
     return df_processed
 
-def process_predictions(df, models, scaler):
+def process_predictions(df, model, scaler):
     """Process each row through prediction pipeline"""
     df_processed = df.copy()
     
@@ -225,35 +225,23 @@ def process_predictions(df, models, scaler):
     else:
         df_scaled = df_processed
     
-    # Get predictions from primary model (Random Forest recommended)
-    if 'random_forest' in models:
-        primary_model = models['random_forest']
-    elif 'gradient_boosting' in models:
-        primary_model = models['gradient_boosting']
-    else:
-        primary_model = list(models.values())[0]
+    # Get predictions and probabilities from Random Forest
+    predictions = model.predict(df_scaled)
+    probabilities = model.predict_proba(df_scaled)
     
-    # Get predictions and probabilities
-    predictions = primary_model.predict(df_scaled)
-    probabilities = primary_model.predict_proba(df_scaled)
-    
-    # Add prediction columns
+     # Add prediction columns
     df_processed['Risk_Prediction'] = predictions
-    df_processed['Risk_Label'] = df_processed['Risk_Prediction'].map({
-        0: 'Low Risk',
-        1: 'Medium Risk',
-        2: 'High Risk'
-    })
+    df_processed['Risk_Label'] = predictions
     
-    # Add probability columns
-    df_processed['Prob_Low_Risk'] = probabilities[:, 0]
-    df_processed['Prob_Medium_Risk'] = probabilities[:, 1]
-    df_processed['Prob_High_Risk'] = probabilities[:, 2]
+    # Map probabilities to correct columns based on model.classes_
+    for i, class_label in enumerate(model.classes_):
+        df_processed[f'Prob_{class_label}_Risk'] = probabilities[:, i]
     
     # Add confidence score
     df_processed['Confidence'] = probabilities.max(axis=1)
     
     return df_processed
+
 
 def create_summary_statistics(df_results):
     """Create summary statistics and visualizations"""
@@ -272,12 +260,12 @@ def create_summary_statistics(df_results):
         st.metric("Average Confidence", f"{avg_confidence:.2%}")
     
     with col3:
-        high_risk_count = (df_results['Risk_Label'] == 'High Risk').sum()
+        high_risk_count = (df_results['Risk_Label'] == 'High').sum()
         high_risk_pct = (high_risk_count / total_students * 100)
         st.metric("High Risk Students", f"{high_risk_count} ({high_risk_pct:.1f}%)")
     
     with col4:
-        med_risk_count = (df_results['Risk_Label'] == 'Medium Risk').sum()
+        med_risk_count = (df_results['Risk_Label'] == 'Medium').sum()
         med_risk_pct = (med_risk_count / total_students * 100)
         st.metric("Medium Risk Students", f"{med_risk_count} ({med_risk_pct:.1f}%)")
     
@@ -291,8 +279,19 @@ def create_summary_statistics(df_results):
     with col1:
         # Pie chart
         fig, ax = plt.subplots(figsize=(8, 6))
-        colors = ['#2ecc71', '#f39c12', '#e74c3c']  # Green, Orange, Red
-        explode = (0.05, 0.05, 0.1)  # Slightly separate slices
+        
+        # Create color mapping for actual labels
+        color_map = {
+            'Low': '#2ecc71',      # Green
+            'Medium': '#f39c12',   # Orange
+            'High': '#e74c3c'      # Red
+        }
+        
+        # Get colors based on actual categories present
+        colors = [color_map.get(label, '#808080') for label in risk_counts.index]
+        
+        # Create dynamic explode (only for categories that exist)
+        explode = tuple([0.1 if label == 'High' else 0.05 for label in risk_counts.index])
         
         ax.pie(
             risk_counts.values,
@@ -474,19 +473,19 @@ def process_uploaded_csv():
             # Step 3: Load models and process predictions
             st.write("**Step 3: Running Prediction Pipeline...**")
             
-            with st.spinner("Loading models..."):
-                models = load_models()
+            with st.spinner("Loading model..."):
+                model = load_models()
                 scaler = load_scaler()
             
-            if not models:
-                st.error("❌ No models available for prediction")
+            if model is None:
+                st.error("❌ Model failed to load. Cannot proceed with predictions.")
                 return
             
             with st.spinner("Processing predictions..."):
-                df_results = process_predictions(df, models, scaler)
+                df_results = process_predictions(df, model, scaler)
             
             st.success("✓ Predictions completed")
-            
+
             # Display summary statistics
             create_summary_statistics(df_results)
             
@@ -498,10 +497,11 @@ def process_uploaded_csv():
             with col1:
                 risk_filter = st.multiselect(
                     "Filter by Risk Level:",
-                    options=['Low Risk', 'Medium Risk', 'High Risk'],
-                    default=['Low Risk', 'Medium Risk', 'High Risk'],
+                    options=['Low', 'Medium', 'High'],
+                    default=['Low', 'Medium', 'High'],
                     help="Select which risk levels to display"
                 )
+
             
             with col2:
                 sort_by = st.selectbox(
@@ -596,15 +596,15 @@ def process_uploaded_csv():
                 summary_col1, summary_col2, summary_col3 = st.columns(3)
                 
                 with summary_col1:
-                    filtered_low = (df_filtered['Risk_Label'] == 'Low Risk').sum()
+                    filtered_low = (df_filtered['Risk_Label'] == 'Low').sum()
                     st.metric("Low Risk (Filtered)", filtered_low)
                 
                 with summary_col2:
-                    filtered_med = (df_filtered['Risk_Label'] == 'Medium Risk').sum()
+                    filtered_med = (df_filtered['Risk_Label'] == 'Medium').sum()
                     st.metric("Medium Risk (Filtered)", filtered_med)
                 
                 with summary_col3:
-                    filtered_high = (df_filtered['Risk_Label'] == 'High Risk').sum()
+                    filtered_high = (df_filtered['Risk_Label'] == 'High').sum()
                     st.metric("High Risk (Filtered)", filtered_high)
             else:
                 st.warning("No results match the selected filters")
