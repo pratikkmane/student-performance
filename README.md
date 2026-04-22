@@ -118,7 +118,7 @@ This project builds a data-driven Streamlit web application that predicts studen
 | Name | GitHub |
 |------|--------|
 | **Pratik** | [@pratikkmane](https://github.com/pratikkmane) |
-| **Emmanuel** | [@eatilola] (https://github.com/eatilola) |
+| **Emmanuel** | [@eatilola](https://github.com/eatilola) |
 | **Yugant** | TBD |
 | **Hamza** | TBD |
 
