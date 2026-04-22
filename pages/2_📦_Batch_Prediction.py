@@ -7,9 +7,6 @@ import warnings
 import matplotlib.pyplot as plt
 warnings.filterwarnings('ignore')
 
-st.cache_data.clear()
-st.cache_resource.clear()
-
 # Feature names
 FEATURES = [
     'age', 'Medu', 'Fedu', 'traveltime', 'studytime', 'failures', 'famrel', 
