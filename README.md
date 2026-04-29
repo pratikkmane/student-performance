@@ -310,9 +310,9 @@ streamlit run app.py
 
 ## 🌐 Deployment
 
-**Live App:** Coming in Week 12  
+**Live App:**
 **Platform:** Streamlit Community Cloud  
-**URL:** TBD
+**URL:** https://iu-student-performance.streamlit.app/
 
 ---
 
@@ -361,4 +361,4 @@ GitHub: [@pratikkmane](https://github.com/pratikkmane)
 ---
 
 **Last Updated:** February 2026  
-**Project Status:** 🟢 Active Development (Week 3 of 15)
+**Project Status:** 🟢 Completed - Application deployed
